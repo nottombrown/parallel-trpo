@@ -60,26 +60,26 @@ def var_shape(x):
         "shape function assumes that shape is fully known"
     return out
 
-class Filter:
+class FilterOb:
     def __init__(self, filter_mean=True):
         self.m1 = 0
         self.v = 0
         self.n = 0.
         self.filter_mean = filter_mean
 
-    def __call__(self, o):
-        self.m1 = self.m1 * (self.n / (self.n + 1)) + o * 1/(1 + self.n)
-        self.v = self.v * (self.n / (self.n + 1)) + (o - self.m1)**2 * 1/(1 + self.n)
+    def __call__(self, obs):
+        self.m1 = self.m1 * (self.n / (self.n + 1)) + obs * 1 / (1 + self.n)
+        self.v = self.v * (self.n / (self.n + 1)) + (obs - self.m1) ** 2 * 1 / (1 + self.n)
         self.std = (self.v + 1e-6)**.5 # std
         self.n += 1
         if self.filter_mean:
-            o1 =  (o - self.m1)/self.std
+            o1 = (obs - self.m1) / self.std
         else:
-            o1 =  o/self.std
+            o1 = obs / self.std
         o1 = (o1 > 10) * 10 + (o1 < -10)* (-10) + (o1 < 10) * (o1 > -10) * o1
         return o1
-filter = Filter()
-filter_std = Filter()
+
+filter_ob = FilterOb()
 
 def numel(x):
     return np.prod(var_shape(x))

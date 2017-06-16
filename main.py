@@ -18,7 +18,7 @@ parser.add_argument("--n_steps", type=int, default=6000000)
 parser.add_argument("--gamma", type=float, default=.99)
 parser.add_argument("--max_kl", type=float, default=.001)
 parser.add_argument("--cg_damping", type=float, default=1e-3)
-parser.add_argument("--num_threads", type=int, default=5)
+parser.add_argument("--num_threads", type=int, default=1)
 parser.add_argument("--monitor", type=bool, default=False)
 
 # change these parameters for testing

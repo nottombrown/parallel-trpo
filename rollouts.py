@@ -1,7 +1,7 @@
 import numpy as np
 import tensorflow as tf
 import multiprocessing
-from utils import filter, fully_connected, SetPolicyWeights
+from utils import filter_ob, fully_connected, SetPolicyWeights
 import gym
 import time
 import copy
@@ -84,17 +84,19 @@ class Actor(multiprocessing.Process):
 
     def rollout(self):
         obs, actions, rewards, action_dists_mu, action_dists_logstd = [], [], [], [], []
-        ob = filter(self.env.reset())
+        ob = filter_ob(self.env.reset())
         for i in range(self.args.max_pathlength - 1):
             obs.append(ob)
             action, action_dist_mu, action_dist_logstd = self.act(ob)
             actions.append(action)
             action_dists_mu.append(action_dist_mu)
             action_dists_logstd.append(action_dist_logstd)
-            res = self.env.step(action)
-            ob = filter(res[0])
-            rewards.append((res[1]))
-            if res[2] or i == self.args.max_pathlength - 2:
+            ob, rew, done, info = self.env.step(action)
+            ob = filter_ob(ob)
+            rewards.append((rew))
+            # print(action_dists_logstd)
+
+            if done or i == self.args.max_pathlength - 2:
                 path = {"obs": np.concatenate(np.expand_dims(obs, 0)),
                              "action_dists_mu": np.concatenate(action_dists_mu),
                              "action_dists_logstd": np.concatenate(action_dists_logstd),
