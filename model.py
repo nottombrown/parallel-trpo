@@ -198,8 +198,8 @@ class TRPO(multiprocessing.Process):
         # stats["Time elapsed"] = "%.2f mins" % ((time.time() - start_time) / 60.0)
         stats["KL between old and new distribution"] = kl_after
         stats["Surrogate loss"] = surrogate_after
-        # print ("\n********** Iteration {} ************".format(i))
-        for k, v in stats.iteritems():
+        # print(("\n********** Iteration {} ************".format(i)))
+        for k, v in stats.items():
             print(k + ": " + " " * (40 - len(k)) + str(v))
 
         return stats["Average sum of rewards per episode"]

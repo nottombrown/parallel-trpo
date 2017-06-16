@@ -81,8 +81,8 @@ while True:
     learner_tasks.join()
     new_policy_weights, mean_reward = learner_results.get()
     learn_time = (time.time() - learn_start) / 60.0
-    print "-------- Iteration %d ----------" % iteration
-    print "Total time: %.2f mins" % ((time.time() - start_time) / 60.0)
+    print("-------- Iteration %d ----------" % iteration)
+    print("Total time: %.2f mins" % ((time.time() - start_time) / 60.0))
 
     history["rollout_time"].append(rollout_time)
     history["learn_time"].append(learn_time)
@@ -101,13 +101,13 @@ while True:
     if args.decay_method == "adaptive":
         if iteration % 10 == 0:
             if recent_total_reward < last_reward:
-                print "Policy is not improving. Decrease KL and increase steps."
+                print("Policy is not improving. Decrease KL and increase steps.")
                 if args.timesteps_per_batch < 20000:
                     args.timesteps_per_batch += args.timestep_adapt
                 if args.max_kl > 0.001:
                     args.max_kl -= args.kl_adapt
             else:
-                print "Policy is improving. Increase KL and decrease steps."
+                print("Policy is improving. Increase KL and decrease steps.")
                 if args.timesteps_per_batch > 1200:
                     args.timesteps_per_batch -= args.timestep_adapt
                 if args.max_kl < 0.01:
@@ -119,15 +119,15 @@ while True:
     if args.decay_method == "adaptive-margin":
         if iteration % 10 == 0:
             scaled_last = last_reward + abs(last_reward * 0.05)
-            print "Last reward: %f Scaled: %f Recent: %f" % (last_reward, scaled_last, recent_total_reward)
+            print("Last reward: %f Scaled: %f Recent: %f" % (last_reward, scaled_last, recent_total_reward))
             if recent_total_reward < scaled_last:
-                print "Policy is not improving. Decrease KL and increase steps."
+                print("Policy is not improving. Decrease KL and increase steps.")
                 if args.timesteps_per_batch < 10000:
                     args.timesteps_per_batch += args.timestep_adapt
                 if args.max_kl > 0.001:
                     args.max_kl -= args.kl_adapt
             else:
-                print "Policy is improving. Increase KL and decrease steps."
+                print("Policy is improving. Increase KL and decrease steps.")
                 if args.timesteps_per_batch > 1200:
                     args.timesteps_per_batch -= args.timestep_adapt
                 if args.max_kl < 0.01:
@@ -135,7 +135,7 @@ while True:
             last_reward = recent_total_reward
             recent_total_reward = 0
 
-    print "Current steps is " + str(args.timesteps_per_batch) + " and KL is " + str(args.max_kl)
+    print("Current steps is " + str(args.timesteps_per_batch) + " and KL is " + str(args.max_kl))
 
 
     # if iteration % 100 == 0:
@@ -143,7 +143,7 @@ while True:
     #         json.dump(history,outfile)
 
     elapsed_steps += args.timesteps_per_batch
-    print "%d total steps have happened" % elapsed_steps
+    print("%d total steps have happened" % elapsed_steps)
     if elapsed_steps > args.n_steps:
         break
 

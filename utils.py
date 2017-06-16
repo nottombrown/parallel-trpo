@@ -38,7 +38,7 @@ def cat_sample(prob_nk):
     N = prob_nk.shape[0]
     csprob_nk = np.cumsum(prob_nk, axis=1)
     out = np.zeros(N, dtype='i')
-    for (n, csprob_k, r) in zip(xrange(N), csprob_nk, np.random.rand(N)):
+    for (n, csprob_k, r) in zip(range(N), csprob_nk, np.random.rand(N)):
         for (k, csprob) in enumerate(csprob_k):
             if csprob > r:
                 out[n] = k
@@ -93,7 +93,7 @@ def conjugate_gradient(f_Ax, b, cg_iters=10, residual_tol=1e-10):
     r = b.copy()
     x = np.zeros_like(b)
     rdotr = r.dot(r)
-    for i in xrange(cg_iters):
+    for i in range(cg_iters):
         z = f_Ax(p)
         v = rdotr / p.dot(z)
         x += v * p
