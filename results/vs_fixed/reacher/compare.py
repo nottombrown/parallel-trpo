@@ -16,7 +16,7 @@ trials = ["Reacher-v1-adaptive-margin-1000.000000-0.001000-300.000000-0.000500",
 "Reacher-v1-none-20000.000000-0.010000-0.000000-0.000000",
 "Reacher-v1-none-20000.000000-0.001000-0.000000-0.000000"]
 names = ["Adapt both w/ margin","Adapt both", "Adapt steps", "Adapt KL", "Optimal steps (1500)", "Optimal KL (0.01)","Orginal steps/KL"]
-for i in xrange(len(trials)):
+for i in range(len(trials)):
     with open(trials[i]) as data_file:
         data = json.load(data_file)
 
@@ -28,7 +28,7 @@ for i in xrange(len(trials)):
     avg = 0
     avgcount = 0
 
-    for e in xrange(len(data["mean_reward"])):
+    for e in range(len(data["mean_reward"])):
         totaltime += data["timesteps"][e]
 
         time_since += data["timesteps"][e]

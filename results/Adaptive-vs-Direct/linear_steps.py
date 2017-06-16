@@ -11,14 +11,14 @@ t = []
 r = []
 
 trials = ["Reacher-v1-linear-0.000000-20.000000","Reacher-v1-linear-0.000000-100.000000","Reacher-v1-linear-0.000000-500.000000","Reacher-v1-adaptive-0.000000-500.000000"]
-for i in xrange(len(trials)):
+for i in range(len(trials)):
     with open(trials[i]) as data_file:
         data = json.load(data_file)
 
     times.append([])
     rewards.append([])
     totaltime = 0
-    for e in xrange(len(data["mean_reward"])):
+    for e in range(len(data["mean_reward"])):
         totaltime += data["timesteps"][e]
         # totaltime += 1
         if i == 0:

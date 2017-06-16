@@ -12,14 +12,14 @@ t = []
 r = []
 
 trials = [1000,5000,10000,20000]
-for i in xrange(4):
+for i in range(4):
     with open("montecarlo-test/"+str(trials[i])) as data_file:
         data = json.load(data_file)
 
     times.append([])
     rewards.append([])
     totaltime.append(0)
-    for e in xrange(len(data["mean_reward"])):
+    for e in range(len(data["mean_reward"])):
         totaltime[i] += data["rollout_time"][e] + data["learn_time"][e]
         times[i].append(totaltime[i])
         rewards[i].append(data["mean_reward"][e])

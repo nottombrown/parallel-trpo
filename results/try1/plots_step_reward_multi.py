@@ -8,13 +8,13 @@ task = "Reacher-v1"
 steps = []
 rewards = []
 
-for i in xrange(8):
+for i in range(8):
     with open("speedup/"+task+"-"+str(i+1)) as data_file:
         data = json.load(data_file)
 
     steps.append([])
     rewards.append([])
-    for j in xrange(len(data["mean_reward"])):
+    for j in range(len(data["mean_reward"])):
         rewards[i].append(data["mean_reward"][j])
         steps[i].append(j)
 

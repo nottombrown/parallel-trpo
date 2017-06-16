@@ -14,13 +14,13 @@ with open("try1/"+task+"-5") as data_file:
 
 times_1 = []
 rewards_1 = []
-for i in xrange(len(data_1["mean_reward"])):
+for i in range(len(data_1["mean_reward"])):
     times_1.append(i)
     rewards_1.append(data_1["mean_reward"][i])
 
 times_2 = []
 rewards_2 = []
-for i in xrange(len(data_2["mean_reward"])):
+for i in range(len(data_2["mean_reward"])):
     times_2.append(i)
     rewards_2.append(data_2["mean_reward"][i])
 

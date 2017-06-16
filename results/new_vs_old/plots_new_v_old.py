@@ -11,14 +11,14 @@ t = []
 r = []
 
 trials = ["HalfCheetah-newmethod","HalfCheetah-oldmethod","HalfCheetah-averagingLONG"]
-for i in xrange(3):
+for i in range(3):
     with open("new_vs_old/"+trials[i]) as data_file:
         data = json.load(data_file)
 
     times.append([])
     rewards.append([])
     totaltime = 0
-    for e in xrange(len(data["mean_reward"])):
+    for e in range(len(data["mean_reward"])):
         totaltime += data["timesteps"][e]
         # totaltime += 1
         if i == 0:

@@ -11,7 +11,7 @@ r = []
 trials = ["Swimmer-v1-none-20000.000000-0.001000-0.000000-0.000000","Swimmer-v1-none-10000.000000-0.001000-0.000000-0.000000","Swimmer-v1-none-5000.000000-0.001000-0.000000-0.000000","Swimmer-v1-none-1500.000000-0.001000-0.000000-0.000000"]
 names = ["Fixed 20,000 steps", "Fixed 10,000 steps", "Fixed 5,000 steps", "Fixed 1,500 steps"]
 
-for i in xrange(len(trials)):
+for i in range(len(trials)):
     with open(trials[i]) as data_file:
         data = json.load(data_file)
 
@@ -23,7 +23,7 @@ for i in xrange(len(trials)):
     avg = 0
     avgcount = 0
 
-    for e in xrange(len(data["mean_reward"])):
+    for e in range(len(data["mean_reward"])):
         totaltime += data["timesteps"][e]
 
         time_since += data["timesteps"][e]

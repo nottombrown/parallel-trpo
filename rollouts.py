@@ -47,7 +47,7 @@ class Actor(multiprocessing.Process):
             h3 = fully_connected(h2, self.hidden_size, self.action_size, weight_init, bias_init, "policy_h3")
             action_dist_logstd_param = tf.Variable((.01*np.random.randn(1, self.action_size)).astype(np.float32), name="policy_logstd")
         self.action_dist_mu = h3
-        self.action_dist_logstd = tf.tile(action_dist_logstd_param, tf.pack((tf.shape(self.action_dist_mu)[0], 1)))
+        self.action_dist_logstd = tf.tile(action_dist_logstd_param, tf.stack((tf.shape(self.action_dist_mu)[0], 1)))
 
         config = tf.ConfigProto(
             device_count = {'GPU': 0}
@@ -67,7 +67,7 @@ class Actor(multiprocessing.Process):
                 self.task_q.task_done()
                 self.result_q.put(path)
             elif next_task == 2:
-                print "kill message"
+                print("kill message")
                 if self.monitor:
                     self.env.monitor.close()
                 self.task_q.task_done()
@@ -84,7 +84,7 @@ class Actor(multiprocessing.Process):
     def rollout(self):
         obs, actions, rewards, action_dists_mu, action_dists_logstd = [], [], [], [], []
         ob = filter(self.env.reset())
-        for i in xrange(self.args.max_pathlength - 1):
+        for i in range(self.args.max_pathlength - 1):
             obs.append(ob)
             action, action_dist_mu, action_dist_logstd = self.act(ob)
             actions.append(action)
@@ -100,7 +100,6 @@ class Actor(multiprocessing.Process):
                              "rewards": np.array(rewards),
                              "actions":  np.array(actions)}
                 return path
-                break
 
 class ParallelRollout():
     def __init__(self, args):
@@ -112,7 +111,7 @@ class ParallelRollout():
         self.actors = []
         self.actors.append(Actor(self.args, self.tasks, self.results, 9999, args.monitor))
 
-        for i in xrange(self.args.num_threads-1):
+        for i in range(self.args.num_threads-1):
             self.actors.append(Actor(self.args, self.tasks, self.results, 37*(i+3), False))
 
         for a in self.actors:
@@ -125,9 +124,9 @@ class ParallelRollout():
     def rollout(self):
 
         # keep 20,000 timesteps per update
-        num_rollouts = self.args.timesteps_per_batch / self.average_timesteps_in_episode
+        num_rollouts = int(self.args.timesteps_per_batch / self.average_timesteps_in_episode)
 
-        for i in xrange(num_rollouts):
+        for i in range(num_rollouts):
             self.tasks.put(1)
 
         self.tasks.join()
@@ -141,10 +140,10 @@ class ParallelRollout():
         return paths
 
     def set_policy_weights(self, parameters):
-        for i in xrange(self.args.num_threads):
+        for i in range(self.args.num_threads):
             self.tasks.put(parameters)
         self.tasks.join()
 
     def end(self):
-        for i in xrange(self.args.num_threads):
+        for i in range(self.args.num_threads):
             self.tasks.put(2)

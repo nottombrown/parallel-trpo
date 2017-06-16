@@ -11,7 +11,7 @@ totaltime = []
 t = []
 l = []
 r = []
-for i in xrange(8):
+for i in range(8):
     with open("speedup/"+task+"-"+str(i+1)) as data_file:
         data = json.load(data_file)
 
@@ -20,8 +20,8 @@ for i in xrange(8):
     l.append(np.mean(data["learn_time"]))
     r.append(i+1)
 
-print r
-print t
+print(r)
+print(t)
 plt.plot(r,t,label="Rollout time")
 plt.plot(r,l,label="Learning time")
 plt.xlabel("Threads")

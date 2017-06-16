@@ -10,14 +10,14 @@ rewards = []
 totaltime = []
 t = []
 r = []
-for i in xrange(8):
+for i in range(8):
     with open("speedup/"+task+"-"+str(i+1)) as data_file:
         data = json.load(data_file)
 
     times.append([])
     rewards.append([])
     totaltime.append(0)
-    for e in xrange(len(data["mean_reward"])):
+    for e in range(len(data["mean_reward"])):
         totaltime[i] += data["rollout_time"][e] + data["learn_time"][e]
         times[i].append(totaltime[i])
         rewards[i].append(data["mean_reward"][e])

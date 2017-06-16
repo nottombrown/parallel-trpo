@@ -11,7 +11,7 @@ r = []
 trials = ["HalfCheetah-v1-none-20000.000000-0.001000-0.000000-0.000000","HalfCheetah-v1-none-20000.000000-0.005000-0.000000-0.000000","HalfCheetah-v1-none-20000.000000-0.010000-0.000000-0.000000"]
 names = ["Fixed 0.001 KL", "Fixed 0.005 KL", "Fixed 0.01 KL"]
 
-for i in xrange(len(trials)):
+for i in range(len(trials)):
     with open(trials[i]) as data_file:
         data = json.load(data_file)
 
@@ -23,7 +23,7 @@ for i in xrange(len(trials)):
     avg = 0
     avgcount = 0
 
-    for e in xrange(len(data["mean_reward"])):
+    for e in range(len(data["mean_reward"])):
         totaltime += data["timesteps"][e]
 
         time_since += data["timesteps"][e]
