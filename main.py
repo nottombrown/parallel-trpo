@@ -138,9 +138,9 @@ while True:
     print "Current steps is " + str(args.timesteps_per_batch) + " and KL is " + str(args.max_kl)
 
 
-    if iteration % 100 == 0:
-        with open("%s-%s-%f-%f-%f-%f" % (args.task, args.decay_method, starting_timesteps, starting_kl, args.timestep_adapt, args.kl_adapt), "w") as outfile:
-            json.dump(history,outfile)
+    # if iteration % 100 == 0:
+    #     with open("%s-%s-%f-%f-%f-%f" % (args.task, args.decay_method, starting_timesteps, starting_kl, args.timestep_adapt, args.kl_adapt), "w") as outfile:
+    #         json.dump(history,outfile)
 
     elapsed_steps += args.timesteps_per_batch
     print "%d total steps have happened" % elapsed_steps
