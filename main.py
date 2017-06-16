@@ -6,12 +6,13 @@ from model import *
 import argparse
 from rollouts import *
 import json
-
+import os.path as osp
 
 
 parser = argparse.ArgumentParser(description='TRPO.')
 # these parameters should stay the same
 parser.add_argument("--task", type=str, default='Reacher-v1')
+parser.add_argument("--run_name", type=str, default='test_run')
 parser.add_argument("--timesteps_per_batch", type=int, default=10000)
 parser.add_argument("--n_steps", type=int, default=6000000)
 parser.add_argument("--gamma", type=float, default=.99)
@@ -52,14 +53,17 @@ history["timesteps"] = []
 last_reward = -1000000
 recent_total_reward = 0
 
-totalsteps = 0;
+elapsed_steps = 0
 
 starting_timesteps = args.timesteps_per_batch
 starting_kl = args.max_kl
 
 iteration = 0
+
+summary_writer = tf.summary.FileWriter(osp.expanduser(osp.join("~/data/tb", args.task, args.run_name)))
+
 while True:
-    iteration += 1;
+    iteration += 1
 
     # runs a bunch of async processes that collect rollouts
     rollout_start = time.time()
@@ -84,6 +88,13 @@ while True:
     history["learn_time"].append(learn_time)
     history["mean_reward"].append(mean_reward)
     history["timesteps"].append(args.timesteps_per_batch)
+
+    # Log results to tensorboard
+    summary = tf.Summary(value=[
+        tf.Summary.Value(tag="mean_reward", simple_value=mean_reward),
+        tf.Summary.Value(tag="elapsed_steps", simple_value=elapsed_steps)
+    ])
+    summary_writer.add_summary(summary, global_step=iteration)
 
     recent_total_reward += mean_reward
 
@@ -126,13 +137,14 @@ while True:
 
     print "Current steps is " + str(args.timesteps_per_batch) + " and KL is " + str(args.max_kl)
 
+
     if iteration % 100 == 0:
         with open("%s-%s-%f-%f-%f-%f" % (args.task, args.decay_method, starting_timesteps, starting_kl, args.timestep_adapt, args.kl_adapt), "w") as outfile:
             json.dump(history,outfile)
 
-    totalsteps += args.timesteps_per_batch
-    print "%d total steps have happened" % totalsteps
-    if totalsteps > args.n_steps:
+    elapsed_steps += args.timesteps_per_batch
+    print "%d total steps have happened" % elapsed_steps
+    if elapsed_steps > args.n_steps:
         break
 
     rollouts.set_policy_weights(new_policy_weights)
