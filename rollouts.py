@@ -1,7 +1,7 @@
 import numpy as np
 import tensorflow as tf
 import multiprocessing
-from utils import *
+from utils import filter, fully_connected, SetPolicyWeights
 import gym
 import time
 import copy
@@ -36,6 +36,7 @@ class Actor(multiprocessing.Process):
         self.hidden_size = 64
         weight_init = tf.random_uniform_initializer(-0.05, 0.05)
         bias_init = tf.constant_initializer(0)
+
         # tensorflow model of the policy
         self.obs = tf.placeholder(tf.float32, [None, self.observation_size])
         self.debug = tf.constant([2,2])

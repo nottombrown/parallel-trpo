@@ -22,7 +22,7 @@ parser.add_argument("--num_threads", type=int, default=5)
 parser.add_argument("--monitor", type=bool, default=False)
 
 # change these parameters for testing
-parser.add_argument("--decay_method", type=str, default="adaptive") # adaptive, none
+parser.add_argument("--decay_method", type=str, default="none") # adaptive, none
 parser.add_argument("--timestep_adapt", type=int, default=0)
 parser.add_argument("--kl_adapt", type=float, default=0)
 
@@ -98,42 +98,42 @@ while True:
 
     recent_total_reward += mean_reward
 
-    if args.decay_method == "adaptive":
-        if iteration % 10 == 0:
-            if recent_total_reward < last_reward:
-                print("Policy is not improving. Decrease KL and increase steps.")
-                if args.timesteps_per_batch < 20000:
-                    args.timesteps_per_batch += args.timestep_adapt
-                if args.max_kl > 0.001:
-                    args.max_kl -= args.kl_adapt
-            else:
-                print("Policy is improving. Increase KL and decrease steps.")
-                if args.timesteps_per_batch > 1200:
-                    args.timesteps_per_batch -= args.timestep_adapt
-                if args.max_kl < 0.01:
-                    args.max_kl += args.kl_adapt
-            last_reward = recent_total_reward
-            recent_total_reward = 0
-
-
-    if args.decay_method == "adaptive-margin":
-        if iteration % 10 == 0:
-            scaled_last = last_reward + abs(last_reward * 0.05)
-            print("Last reward: %f Scaled: %f Recent: %f" % (last_reward, scaled_last, recent_total_reward))
-            if recent_total_reward < scaled_last:
-                print("Policy is not improving. Decrease KL and increase steps.")
-                if args.timesteps_per_batch < 10000:
-                    args.timesteps_per_batch += args.timestep_adapt
-                if args.max_kl > 0.001:
-                    args.max_kl -= args.kl_adapt
-            else:
-                print("Policy is improving. Increase KL and decrease steps.")
-                if args.timesteps_per_batch > 1200:
-                    args.timesteps_per_batch -= args.timestep_adapt
-                if args.max_kl < 0.01:
-                    args.max_kl += args.kl_adapt
-            last_reward = recent_total_reward
-            recent_total_reward = 0
+    # if args.decay_method == "adaptive":
+    #     if iteration % 10 == 0:
+    #         if recent_total_reward < last_reward:
+    #             print("Policy is not improving. Decrease KL and increase steps.")
+    #             if args.timesteps_per_batch < 20000:
+    #                 args.timesteps_per_batch += args.timestep_adapt
+    #             if args.max_kl > 0.001:
+    #                 args.max_kl -= args.kl_adapt
+    #         else:
+    #             print("Policy is improving. Increase KL and decrease steps.")
+    #             if args.timesteps_per_batch > 1200:
+    #                 args.timesteps_per_batch -= args.timestep_adapt
+    #             if args.max_kl < 0.01:
+    #                 args.max_kl += args.kl_adapt
+    #         last_reward = recent_total_reward
+    #         recent_total_reward = 0
+    #
+    #
+    # if args.decay_method == "adaptive-margin":
+    #     if iteration % 10 == 0:
+    #         scaled_last = last_reward + abs(last_reward * 0.05)
+    #         print("Last reward: %f Scaled: %f Recent: %f" % (last_reward, scaled_last, recent_total_reward))
+    #         if recent_total_reward < scaled_last:
+    #             print("Policy is not improving. Decrease KL and increase steps.")
+    #             if args.timesteps_per_batch < 10000:
+    #                 args.timesteps_per_batch += args.timestep_adapt
+    #             if args.max_kl > 0.001:
+    #                 args.max_kl -= args.kl_adapt
+    #         else:
+    #             print("Policy is improving. Increase KL and decrease steps.")
+    #             if args.timesteps_per_batch > 1200:
+    #                 args.timesteps_per_batch -= args.timestep_adapt
+    #             if args.max_kl < 0.01:
+    #                 args.max_kl += args.kl_adapt
+    #         last_reward = recent_total_reward
+    #         recent_total_reward = 0
 
     print("Current steps is " + str(args.timesteps_per_batch) + " and KL is " + str(args.max_kl))
 

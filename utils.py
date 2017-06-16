@@ -1,3 +1,4 @@
+from __future__ import division
 import tensorflow as tf
 import numpy as np
 import scipy.signal
@@ -12,7 +13,7 @@ def gauss_selfKL_firstfixed(mu, logstd):
 # probability to take action x, given paramaterized guassian distribution
 def gauss_log_prob(mu, logstd, x):
     var = tf.exp(2*logstd)
-    gp = -tf.square(x - mu)/(2*var) - .5*tf.log(tf.constant(2*np.pi)) - logstd
+    gp = -tf.square(x - mu) / (2*var) - .5*tf.log(tf.constant(2*np.pi)) - logstd
     return  tf.reduce_sum(gp, [1])
 
 # KL divergence between two paramaterized guassian distributions
@@ -20,7 +21,7 @@ def gauss_KL(mu1, logstd1, mu2, logstd2):
     var1 = tf.exp(2*logstd1)
     var2 = tf.exp(2*logstd2)
 
-    kl = tf.reduce_sum(logstd2 - logstd1 + (var1 + tf.square(mu1 - mu2))/(2*var2) - 0.5)
+    kl = tf.reduce_sum(logstd2 - logstd1 + (var1 + tf.square(mu1 - mu2)) / (2*var2) - 0.5)
     return kl
 
 # Shannon entropy for a paramaterized guassian distributions
@@ -67,7 +68,7 @@ class Filter:
         self.filter_mean = filter_mean
 
     def __call__(self, o):
-        self.m1 = self.m1 * (self.n / (self.n + 1)) + o    * 1/(1 + self.n)
+        self.m1 = self.m1 * (self.n / (self.n + 1)) + o * 1/(1 + self.n)
         self.v = self.v * (self.n / (self.n + 1)) + (o - self.m1)**2 * 1/(1 + self.n)
         self.std = (self.v + 1e-6)**.5 # std
         self.n += 1
