@@ -11,7 +11,7 @@ class TRPO(multiprocessing.Process):
         self.action_space = action_space
         self.args = args
 
-    def makeModel(self):
+    def make_model(self):
         self.observation_size = self.observation_space.shape[0]
         self.action_size = np.prod(self.action_space.shape)
         self.hidden_size = 64
@@ -55,7 +55,6 @@ class TRPO(multiprocessing.Process):
         surr = -tf.reduce_mean(ratio * self.advantage)
         var_list = tf.trainable_variables()
 
-        eps = 1e-8
         batch_size_float = tf.cast(batch_size, tf.float32)
         # kl divergence and shannon entropy
         kl = gauss_KL(self.oldaction_dist_mu, self.oldaction_dist_logstd, self.action_dist_mu,
@@ -80,6 +79,7 @@ class TRPO(multiprocessing.Process):
             param = tf.reshape(self.flat_tangent[start:(start + size)], shape)
             tangents.append(param)
             start += size
+
         # gradient of KL w/ itself * tangent
         gvp = [tf.reduce_sum(g * t) for (g, t) in zip(grads, tangents)]
         # 2nd gradient of KL w/ itself * tangent
@@ -96,7 +96,7 @@ class TRPO(multiprocessing.Process):
         self.get_policy = GetPolicyWeights(self.session, var_list)
 
     def run(self):
-        self.makeModel()
+        self.make_model()
         while True:
             paths = self.task_q.get()
             if paths is None:
