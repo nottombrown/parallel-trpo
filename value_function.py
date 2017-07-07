@@ -1,6 +1,8 @@
 import tensorflow as tf
 import numpy as np
-from utils import *
+
+import utils
+
 
 class VF(object):
     coeffs = None
@@ -19,22 +21,21 @@ class VF(object):
         bias_init = tf.constant_initializer(0)
 
         with tf.variable_scope("VF"):
-            h1 = tf.nn.relu(fully_connected(self.x, shape, hidden_size, weight_init, bias_init, "h1"))
-            h2 = tf.nn.relu(fully_connected(h1, hidden_size, hidden_size, weight_init, bias_init, "h2"))
-            h3 = fully_connected(h2, hidden_size, 1, weight_init, bias_init, "h3")
+            h1 = tf.nn.relu(utils.fully_connected(self.x, shape, hidden_size, weight_init, bias_init, "h1"))
+            h2 = tf.nn.relu(utils.fully_connected(h1, hidden_size, hidden_size, weight_init, bias_init, "h2"))
+            h3 = utils.fully_connected(h2, hidden_size, 1, weight_init, bias_init, "h3")
         self.net = tf.reshape(h3, (-1,))
         l2 = tf.nn.l2_loss(self.net - self.y)
         self.train = tf.train.AdamOptimizer().minimize(l2)
-        self.session.run(tf.initialize_all_variables())
-
+        self.session.run(tf.global_variables_initializer())
 
     def _features(self, path):
         o = path["obs"].astype('float32')
         o = o.reshape(o.shape[0], -1)
         act = path["action_dists"].astype('float32')
-        l = len(path["rewards"])
-        al = np.arange(l).reshape(-1, 1) / 10.0
-        ret = np.concatenate([o, act, al, np.ones((l, 1))], axis=1)
+        length = len(path["rewards"])
+        al = np.arange(length).reshape(-1, 1) / 10.0
+        ret = np.concatenate([o, act, al, np.ones((length, 1))], axis=1)
         return ret
 
     def fit(self, paths):
@@ -59,9 +60,9 @@ class LinearVF(object):
     def _features(self, path):
         o = path["obs"].astype('float32')
         o = o.reshape(o.shape[0], -1)
-        l = len(path["rewards"])
-        al = np.arange(l).reshape(-1, 1) / 100.0
-        return np.concatenate([o, o**2, al, al**2, np.ones((l, 1))], axis=1)
+        length = len(path["rewards"])
+        al = np.arange(length).reshape(-1, 1) / 100.0
+        return np.concatenate([o, o**2, al, al**2, np.ones((length, 1))], axis=1)
 
     def fit(self, paths):
         featmat = np.concatenate([self._features(path) for path in paths])
@@ -71,5 +72,7 @@ class LinearVF(object):
         self.coeffs = np.linalg.lstsq(featmat.T.dot(featmat) + lamb * np.identity(n_col), featmat.T.dot(returns))[0]
 
     def predict(self, path):
-        return np.zeros(len(path["rewards"])) if self.coeffs is None else self._features(
-            path).dot(self.coeffs)
+        if self.coeffs:
+            return np.zeros(len(path["rewards"]))
+        else:
+            return self._features(path).dot(self.coeffs)

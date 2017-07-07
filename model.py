@@ -1,6 +1,11 @@
 import multiprocessing
 
-from value_function import *
+import numpy as np
+import tensorflow as tf
+
+import utils
+from value_function import LinearVF
+
 
 class TRPO(multiprocessing.Process):
     def __init__(self, args, observation_space, action_space, task_q, result_q):
@@ -31,22 +36,22 @@ class TRPO(multiprocessing.Process):
         self.oldaction_dist_logstd = tf.placeholder(tf.float32, [None, self.action_size])
 
         with tf.variable_scope("policy"):
-            h1 = fully_connected(self.obs, self.observation_size, self.hidden_size, weight_init, bias_init, "policy_h1")
+            h1 = utils.fully_connected(self.obs, self.observation_size, self.hidden_size, weight_init, bias_init, "policy_h1")
             h1 = tf.nn.relu(h1)
-            h2 = fully_connected(h1, self.hidden_size, self.hidden_size, weight_init, bias_init, "policy_h2")
+            h2 = utils.fully_connected(h1, self.hidden_size, self.hidden_size, weight_init, bias_init, "policy_h2")
             h2 = tf.nn.relu(h2)
-            h3 = fully_connected(h2, self.hidden_size, self.action_size, weight_init, bias_init, "policy_h3")
-            action_dist_logstd_param = tf.Variable((.01 * np.random.randn(1, self.action_size)).astype(np.float32),
-                name="policy_logstd")
+            h3 = utils.fully_connected(h2, self.hidden_size, self.action_size, weight_init, bias_init, "policy_h3")
+            action_dist_logstd_param = tf.Variable(
+                (.01 * np.random.randn(1, self.action_size)).astype(np.float32), name="policy_logstd")
         # means for each action
         self.action_dist_mu = h3
         # log standard deviations for each actions
-        self.action_dist_logstd = tf.tile(action_dist_logstd_param, tf.pack((tf.shape(self.action_dist_mu)[0], 1)))
+        self.action_dist_logstd = tf.tile(action_dist_logstd_param, tf.stack((tf.shape(self.action_dist_mu)[0], 1)))
 
         batch_size = tf.shape(self.obs)[0]
         # what are the probabilities of taking self.action, given new and old distributions
-        log_p_n = gauss_log_prob(self.action_dist_mu, self.action_dist_logstd, self.action)
-        log_oldp_n = gauss_log_prob(self.oldaction_dist_mu, self.oldaction_dist_logstd, self.action)
+        log_p_n = utils.gauss_log_prob(self.action_dist_mu, self.action_dist_logstd, self.action)
+        log_oldp_n = utils.gauss_log_prob(self.oldaction_dist_mu, self.oldaction_dist_logstd, self.action)
 
         # tf.exp(log_p_n) / tf.exp(log_oldp_n)
         ratio = tf.exp(log_p_n - log_oldp_n)
@@ -57,21 +62,22 @@ class TRPO(multiprocessing.Process):
 
         batch_size_float = tf.cast(batch_size, tf.float32)
         # kl divergence and shannon entropy
-        kl = gauss_KL(self.oldaction_dist_mu, self.oldaction_dist_logstd, self.action_dist_mu,
+        kl = utils.gauss_KL(
+            self.oldaction_dist_mu, self.oldaction_dist_logstd, self.action_dist_mu,
             self.action_dist_logstd) / batch_size_float
-        ent = gauss_ent(self.action_dist_mu, self.action_dist_logstd) / batch_size_float
+        ent = utils.gauss_ent(self.action_dist_mu, self.action_dist_logstd) / batch_size_float
 
         self.losses = [surr, kl, ent]
         # policy gradient
-        self.pg = flatgrad(surr, var_list)
+        self.pg = utils.flatgrad(surr, var_list)
 
         # KL divergence w/ itself, with first argument kept constant.
-        kl_firstfixed = gauss_selfKL_firstfixed(self.action_dist_mu, self.action_dist_logstd) / batch_size_float
+        kl_firstfixed = utils.gauss_selfKL_firstfixed(self.action_dist_mu, self.action_dist_logstd) / batch_size_float
         # gradient of KL w/ itself
         grads = tf.gradients(kl_firstfixed, var_list)
         # what vector we're multiplying by
         self.flat_tangent = tf.placeholder(tf.float32, [None])
-        shapes = map(var_shape, var_list)
+        shapes = map(utils.var_shape, var_list)
         start = 0
         tangents = []
         for shape in shapes:
@@ -83,17 +89,17 @@ class TRPO(multiprocessing.Process):
         # gradient of KL w/ itself * tangent
         gvp = [tf.reduce_sum(g * t) for (g, t) in zip(grads, tangents)]
         # 2nd gradient of KL w/ itself * tangent
-        self.fvp = flatgrad(gvp, var_list)
+        self.fvp = utils.flatgrad(gvp, var_list)
         # the actual parameter values
-        self.gf = GetFlat(self.session, var_list)
+        self.gf = utils.GetFlat(self.session, var_list)
         # call this to set parameter values
-        self.sff = SetFromFlat(self.session, var_list)
-        self.session.run(tf.initialize_all_variables())
+        self.sff = utils.SetFromFlat(self.session, var_list)
+        self.session.run(tf.global_variables_initializer())
         # value function
         # self.vf = VF(self.session)
         self.vf = LinearVF()
 
-        self.get_policy = GetPolicyWeights(self.session, var_list)
+        self.get_policy = utils.GetPolicyWeights(self.session, var_list)
 
     def run(self):
         self.make_model()
@@ -118,11 +124,10 @@ class TRPO(multiprocessing.Process):
         return
 
     def learn(self, paths):
-
         # is it possible to replace A(s,a) with Q(s,a)?
         for path in paths:
             path["baseline"] = self.vf.predict(path)
-            path["returns"] = discount(path["rewards"], self.args.gamma)
+            path["returns"] = utils.discount(path["rewards"], self.args.gamma)
             path["advantage"] = path["returns"] - path["baseline"]
             # path["advantage"] = path["returns"]
 
@@ -140,7 +145,8 @@ class TRPO(multiprocessing.Process):
         # train value function / baseline on rollout paths
         self.vf.fit(paths)
 
-        feed_dict = {self.obs: obs_n, self.action: action_n, self.advantage: advant_n,
+        feed_dict = {
+            self.obs: obs_n, self.action: action_n, self.advantage: advant_n,
             self.oldaction_dist_mu: action_dist_mu, self.oldaction_dist_logstd: action_dist_logstd}
 
         # parameters
@@ -155,7 +161,7 @@ class TRPO(multiprocessing.Process):
 
         # solve Ax = g, where A is Fisher information metrix and g is gradient of parameters
         # stepdir = A_inverse * g = x
-        stepdir = conjugate_gradient(fisher_vector_product, -g)
+        stepdir = utils.conjugate_gradient(fisher_vector_product, -g)
 
         # let stepdir =  change in theta / direction that theta changes in
         # KL divergence approximated by 0.5 x stepdir_transpose * [Fisher Information Matrix] * stepdir
@@ -177,7 +183,7 @@ class TRPO(multiprocessing.Process):
             return self.session.run(self.losses[0], feed_dict)
 
         # finds best parameter by starting with a big step and working backwards
-        theta = linesearch(loss, thprev, fullstep, negative_g_dot_steppdir / lm)
+        theta = utils.linesearch(loss, thprev, fullstep, negative_g_dot_steppdir / lm)
         # i guess we just take a fullstep no matter what
         theta = thprev + fullstep
         self.sff(theta)

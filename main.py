@@ -22,7 +22,7 @@ parser.add_argument("--num_threads", type=int, default=1)
 parser.add_argument("--monitor", type=bool, default=False)
 
 # change these parameters for testing
-parser.add_argument("--decay_method", type=str, default="none") # adaptive, none
+parser.add_argument("--decay_method", type=str, default="none")  # adaptive, none
 parser.add_argument("--timestep_adapt", type=int, default=0)
 parser.add_argument("--kl_adapt", type=float, default=0)
 
@@ -76,7 +76,7 @@ while True:
     # To solve this, we just make the learner's tf.Session in its own async process,
     # and wait until the learner's done before continuing the main thread.
     learn_start = time.time()
-    learner_tasks.put((2,args.max_kl))
+    learner_tasks.put((2, args.max_kl))
     learner_tasks.put(paths)
     learner_tasks.join()
     new_policy_weights, mean_reward = learner_results.get()
@@ -136,7 +136,6 @@ while True:
     #         recent_total_reward = 0
 
     print("Current steps is " + str(args.timesteps_per_batch) + " and KL is " + str(args.max_kl))
-
 
     # if iteration % 100 == 0:
     #     with open("%s-%s-%f-%f-%f-%f" % (args.task, args.decay_method, starting_timesteps, starting_kl, args.timestep_adapt, args.kl_adapt), "w") as outfile:

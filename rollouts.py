@@ -7,6 +7,7 @@ import time
 import copy
 from random import randint
 
+
 class Actor(multiprocessing.Process):
     def __init__(self, args, task_q, result_q, actor_id, monitor):
         multiprocessing.Process.__init__(self)
@@ -14,7 +15,6 @@ class Actor(multiprocessing.Process):
         self.result_q = result_q
         self.args = args
         self.monitor = monitor
-
 
     def act(self, obs):
         obs = np.expand_dims(obs, 0)
@@ -26,7 +26,7 @@ class Actor(multiprocessing.Process):
     def run(self):
 
         self.env = gym.make(self.args.task)
-        self.env.seed(randint(0,999999))
+        self.env.seed(randint(0, 999999))
         if self.monitor:
             self.env.monitor.start('monitor/', force=True)
 
@@ -39,7 +39,7 @@ class Actor(multiprocessing.Process):
 
         # tensorflow model of the policy
         self.obs = tf.placeholder(tf.float32, [None, self.observation_size])
-        self.debug = tf.constant([2,2])
+        self.debug = tf.constant([2, 2])
         with tf.variable_scope("policy-a"):
             h1 = fully_connected(self.obs, self.observation_size, self.hidden_size, weight_init, bias_init, "policy_h1")
             h1 = tf.nn.relu(h1)
@@ -48,13 +48,11 @@ class Actor(multiprocessing.Process):
             h3 = fully_connected(h2, self.hidden_size, self.action_size, weight_init, bias_init, "policy_h3")
             action_dist_logstd_param = tf.Variable((.01*np.random.randn(1, self.action_size)).astype(np.float32), name="policy_logstd")
         self.action_dist_mu = h3
-        self.action_dist_logstd = tf.tile(action_dist_logstd_param, tf.pack((tf.shape(self.action_dist_mu)[0], 1)))
+        self.action_dist_logstd = tf.tile(action_dist_logstd_param, tf.stack((tf.shape(self.action_dist_mu)[0], 1)))
 
-        config = tf.ConfigProto(
-            device_count = {'GPU': 0}
-        )
+        config = tf.ConfigProto(device_count={'GPU': 0})
         self.session = tf.Session(config=config)
-        self.session.run(tf.initialize_all_variables())
+        self.session.run(tf.global_variables_initializer())
         var_list = tf.trainable_variables()
 
         self.set_policy = SetPolicyWeights(self.session, var_list)
@@ -97,12 +95,14 @@ class Actor(multiprocessing.Process):
             # print(action_dists_logstd)
 
             if done or i == self.args.max_pathlength - 2:
-                path = {"obs": np.concatenate(np.expand_dims(obs, 0)),
-                             "action_dists_mu": np.concatenate(action_dists_mu),
-                             "action_dists_logstd": np.concatenate(action_dists_logstd),
-                             "rewards": np.array(rewards),
-                             "actions":  np.array(actions)}
+                path = {
+                    "obs": np.concatenate(np.expand_dims(obs, 0)),
+                    "action_dists_mu": np.concatenate(action_dists_mu),
+                    "action_dists_logstd": np.concatenate(action_dists_logstd),
+                    "rewards": np.array(rewards),
+                    "actions":  np.array(actions)}
                 return path
+
 
 class ParallelRollout():
     def __init__(self, args):
