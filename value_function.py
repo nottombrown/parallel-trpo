@@ -72,7 +72,7 @@ class LinearVF(object):
         self.coeffs = np.linalg.lstsq(featmat.T.dot(featmat) + lamb * np.identity(n_col), featmat.T.dot(returns))[0]
 
     def predict(self, path):
-        if self.coeffs:
+        if self.coeffs is None:
             return np.zeros(len(path["rewards"]))
         else:
             return self._features(path).dot(self.coeffs)
