@@ -6,10 +6,8 @@ Tested with python 3.5 and Tensorflow 1.2.0
 
 How to run:
 ```
-# This just runs a simple training on Reacher-v1.
+# Run a simple training on Reacher-v1.
 python main.py
-
-# For the commands used to recreate results, check trials.txt
 
 ```
 Parameters:
