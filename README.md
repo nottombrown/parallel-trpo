@@ -2,7 +2,7 @@
 
 A parallel implementation of Trust Region Policy Optimization on environments from OpenAI gym
 
-Tested with python 3.5 and Tensorflow 1.2.0
+Ported from [kvfrans/parallel-trpo](https://github.com/kvfrans/parallel-trpo) to `python 3.5` and `tensorflow 1.2.0`
 
 How to run:
 ```
