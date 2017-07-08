@@ -8,7 +8,6 @@ How to run:
 ```
 # Run a simple training on Reacher-v1.
 python main.py
-
 ```
 Parameters:
 ```
